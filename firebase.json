@@ -1,0 +1,11 @@
+{
+  "hosting": {
+    "site": "remix-tenderly",
+    "public": "build",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ]
+  }
+}
