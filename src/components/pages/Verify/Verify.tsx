@@ -1,20 +1,49 @@
 import React, {useEffect, useState} from "react";
 import {Network} from "../../../types/Api";
 import RemixClient from "../../../RemixClient";
-import {Button, Form} from "react-bootstrap";
+import {Alert, Button, Form} from "react-bootstrap";
 import "./Verify.scss";
 
 type Props = {
     compiledContracts: string[];
+    projectSlug: string;
+    username: string;
 }
 
-export const Verify: React.FC<Props> = ({compiledContracts}) => {
+const networkSlugMap: { [networkID: string]: string } = {
+    "1": "main",
+    "3": "ropsten",
+    "4": "rinkeby",
+    "5": "goerli",
+    "42": "kovan",
+    "56": "binance",
+    "97": "rialto",
+    "99": "poa",
+    "100": "xdai",
+    "137": "matic-mainnet",
+    "15001": "matic-testnetv3",
+    "80001": "matic-mumbai",
+};
+
+function getNetworkSlug(networkID: string): string {
+    const slug = networkSlugMap[networkID];
+    if (!slug) {
+        return networkID;
+    }
+
+    return slug;
+}
+
+export const Verify: React.FC<Props> = ({compiledContracts, projectSlug, username}) => {
     const [networks, setNetworks] = useState([] as Network[]);
     const [address, setAddress] = useState("");
     const [networksMap, setNetworksMap] = useState({} as { [key: string]: Network })
     const [selectedNetwork, setSelectedNetwork] = useState("");
     const [verificationSuccessful, setVerificationSuccessful] = useState(false);
     const [selectedContract, setSelectedContract] = useState("");
+    const [showAlert, setShowAlert] = useState(false);
+    const [showImportAlert, setShowImportAlert] = useState(false);
+    const [importSuccessful, setImportSuccessful] = useState(false);
 
     useEffect(() => {
         const load = async () => {
@@ -35,12 +64,17 @@ export const Verify: React.FC<Props> = ({compiledContracts}) => {
     const onSubmit = async (event: any) => {
         event.preventDefault();
 
+        setShowAlert(false);
+        setShowImportAlert(false);
+
         if (!selectedContract) {
             return;
         }
 
         const compilationResult = await RemixClient.fetchLastCompilation(selectedContract);
         if (!compilationResult || compilationResult.contracts.length === 0) {
+            setShowAlert(true);
+            setVerificationSuccessful(false);
             return;
         }
 
@@ -51,12 +85,15 @@ export const Verify: React.FC<Props> = ({compiledContracts}) => {
 
         const success = await RemixClient.verify(compilationResult);
 
+        setShowAlert(true)
         setVerificationSuccessful(success);
     }
 
     const onNetworkChange = (networkId: string) => {
         const network = networksMap[networkId];
 
+        setShowAlert(false);
+        setShowImportAlert(false);
         setVerificationSuccessful(false);
 
         if (!network) {
@@ -69,13 +106,28 @@ export const Verify: React.FC<Props> = ({compiledContracts}) => {
 
     const onAddressChange = (event: any) => {
         setAddress(event.target.value);
+        setShowAlert(false);
+        setShowImportAlert(false);
         setVerificationSuccessful(false);
     }
 
     const onAddToProject = async (event: any) => {
         event.preventDefault();
+        setShowImportAlert(false);
+        setShowAlert(false);
+        setVerificationSuccessful(false);
 
         const success = await RemixClient.addToProject(selectedNetwork, address);
+
+        setShowImportAlert(true);
+        setImportSuccessful(success);
+    }
+
+    const openTab = (url: string) => {
+        return (event: any) => {
+            event.preventDefault();
+            window.open(url);
+        };
     }
 
     return (
@@ -123,7 +175,7 @@ export const Verify: React.FC<Props> = ({compiledContracts}) => {
                 </Form.Group>
 
                 <Form.Group>
-                    <Button variant="primary" type="submit" disabled={!selectedContract}>
+                    <Button variant="primary" type="submit" disabled={!selectedContract || !address}>
                         Verify
                     </Button>
                     <Button variant="secondary" className="add-to-project-btn" type="button" onClick={onAddToProject}
@@ -132,6 +184,28 @@ export const Verify: React.FC<Props> = ({compiledContracts}) => {
                     </Button>
                 </Form.Group>
             </Form>
+
+            {showAlert && verificationSuccessful && <Alert variant="success">
+              Contract successfully verified! You can see it by <Alert.Link
+              onClick={openTab(`https://dashboard.tenderly.co/contract/${getNetworkSlug(selectedNetwork)}/${address.toLowerCase()}`)}
+              rel="noopener noreferrer"
+              href={`https://dashboard.tenderly.co/contract/${getNetworkSlug(selectedNetwork)}/${address.toLowerCase()}`}>
+              clicking here
+            </Alert.Link>.
+            </Alert>}
+            {showAlert && !verificationSuccessful && <Alert variant="danger">
+              Failed verifying contract. Please check if the network, address and compiler
+              information is correct. After that, please re-compile your contract and try again.
+            </Alert>}
+
+            {showImportAlert && importSuccessful && <Alert variant="success">
+              Contract successfully added to project! You can see it by <Alert.Link
+              onClick={openTab(`https://dashboard.tenderly.co/${username}/${projectSlug}/contract/${getNetworkSlug(selectedNetwork)}/${address.toLowerCase()}`)}
+              rel="noopener noreferrer"
+              href={`https://dashboard.tenderly.co/${username}/${projectSlug}/contract/${getNetworkSlug(selectedNetwork)}/${address.toLowerCase()}`}>
+              clicking here
+            </Alert.Link>.
+            </Alert>}
         </div>
     );
 }

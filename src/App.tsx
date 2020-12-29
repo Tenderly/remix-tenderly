@@ -17,6 +17,8 @@ const App: React.FC = () => {
     const [selectedProject, setSelectedProject] = useState("");
     const [accessTokenSet, setAccessTokenSet] = useState(false);
     const [compiledContracts, setCompiledContracts] = useState([] as string[]);
+    const [projectSlug, setProjectSlug] = useState("");
+    const [username, setUsername] = useState("");
 
     const [projectMap, setProjectMap] = useState({} as { [key: string]: Project });
 
@@ -45,8 +47,8 @@ const App: React.FC = () => {
                     });
                 });
 
-                Object.entries(compiledContractsMap).forEach(([contractName, exists])=> {
-                   compiledContractsList.push(contractName);
+                Object.entries(compiledContractsMap).forEach(([contractName, exists]) => {
+                    compiledContractsList.push(contractName);
                 });
 
                 compiledContractsList.sort();
@@ -89,12 +91,15 @@ const App: React.FC = () => {
 
         if (!project) {
             setSelectedProject("");
+            setProjectSlug("");
             RemixClient.setProject("", "");
             return
         }
 
         setSelectedProject(project.id);
         RemixClient.setProject(project.slug, project.owner.username);
+        setProjectSlug(project.slug);
+        setUsername(project.owner.username);
 
         const contracts = await RemixClient.getContracts();
 
@@ -124,7 +129,8 @@ const App: React.FC = () => {
                         </AccordionElement>
                         <AccordionElement headerText="Verify" eventKey="1"
                                           disabled={!accessTokenSet || !selectedProject}>
-                            <Verify compiledContracts={compiledContracts}/>
+                            <Verify compiledContracts={compiledContracts} projectSlug={projectSlug}
+                                    username={username}/>
                         </AccordionElement>
                         <AccordionElement headerText="Add From Project" eventKey="2"
                                           disabled={!accessTokenSet || !selectedProject}>

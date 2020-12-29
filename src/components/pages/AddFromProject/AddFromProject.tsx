@@ -39,7 +39,6 @@ export const AddFromProject: React.FC<Props> = ({contracts}) => {
 
         setShowAlert(true);
 
-
         setSuccess(true);
     }
 
