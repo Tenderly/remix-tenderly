@@ -115,6 +115,9 @@ class RemixClient extends PluginClient {
                 console.log("Got bytecode mismatch: ", response.data.bytecode_mismatch_errors);
                 throw new Error("Bytecode mismatch")
             }
+            if (!response.data.contracts) {
+                return false;
+            }
         } catch (e) {
             console.log("Couldn't verify contract: ", e)
             return false;

@@ -95,6 +95,7 @@ export const Verify: React.FC<Props> = ({compiledContracts, projectSlug, usernam
         setShowAlert(false);
         setShowImportAlert(false);
         setVerificationSuccessful(false);
+        setImportSuccessful(false);
 
         if (!network) {
             setSelectedNetwork("");
@@ -109,6 +110,7 @@ export const Verify: React.FC<Props> = ({compiledContracts, projectSlug, usernam
         setShowAlert(false);
         setShowImportAlert(false);
         setVerificationSuccessful(false);
+        setImportSuccessful(false);
     }
 
     const onAddToProject = async (event: any) => {
@@ -116,6 +118,7 @@ export const Verify: React.FC<Props> = ({compiledContracts, projectSlug, usernam
         setShowImportAlert(false);
         setShowAlert(false);
         setVerificationSuccessful(false);
+        setImportSuccessful(false);
 
         const success = await RemixClient.addToProject(selectedNetwork, address);
 
@@ -175,7 +178,8 @@ export const Verify: React.FC<Props> = ({compiledContracts, projectSlug, usernam
                 </Form.Group>
 
                 <Form.Group>
-                    <Button variant="primary" type="submit" disabled={!selectedContract || !address}>
+                    <Button variant="primary" type="submit"
+                            disabled={!selectedContract || !address || !selectedNetwork}>
                         Verify
                     </Button>
                     <Button variant="secondary" className="add-to-project-btn" type="button" onClick={onAddToProject}
@@ -186,12 +190,12 @@ export const Verify: React.FC<Props> = ({compiledContracts, projectSlug, usernam
             </Form>
 
             {showAlert && verificationSuccessful && <Alert variant="success">
-              Contract successfully verified! You can see it by <Alert.Link
+              Contract successfully verified! You can see it by <a
               onClick={openTab(`https://dashboard.tenderly.co/contract/${getNetworkSlug(selectedNetwork)}/${address.toLowerCase()}`)}
               rel="noopener noreferrer"
               href={`https://dashboard.tenderly.co/contract/${getNetworkSlug(selectedNetwork)}/${address.toLowerCase()}`}>
               clicking here
-            </Alert.Link>.
+            </a>.
             </Alert>}
             {showAlert && !verificationSuccessful && <Alert variant="danger">
               Failed verifying contract. Please check if the network, address and compiler
@@ -199,12 +203,12 @@ export const Verify: React.FC<Props> = ({compiledContracts, projectSlug, usernam
             </Alert>}
 
             {showImportAlert && importSuccessful && <Alert variant="success">
-              Contract successfully added to project! You can see it by <Alert.Link
+              Contract successfully added to project! You can see it by <a
               onClick={openTab(`https://dashboard.tenderly.co/${username}/${projectSlug}/contract/${getNetworkSlug(selectedNetwork)}/${address.toLowerCase()}`)}
               rel="noopener noreferrer"
               href={`https://dashboard.tenderly.co/${username}/${projectSlug}/contract/${getNetworkSlug(selectedNetwork)}/${address.toLowerCase()}`}>
               clicking here
-            </Alert.Link>.
+            </a>.
             </Alert>}
         </div>
     );
