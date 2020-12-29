@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 import {Account} from "../../../types/Api";
-import {Button, Form} from "react-bootstrap";
+import {Alert, Button, Form} from "react-bootstrap";
 import "./AddFromProject.scss";
 import RemixClient from '../../../RemixClient';
 import upath from 'upath';
@@ -11,9 +11,12 @@ type Props = {
 
 export const AddFromProject: React.FC<Props> = ({contracts}) => {
     const [selectedContract, setSelectedContract] = useState("");
+    const [showAlert, setShowAlert] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     const onSubmit = async (event: any) => {
         event.preventDefault();
+        setShowAlert(false);
 
         const contract = contracts[selectedContract];
 
@@ -21,14 +24,23 @@ export const AddFromProject: React.FC<Props> = ({contracts}) => {
             return;
         }
 
+
         const contractData = await RemixClient.getContract(contract.contract.network_id, contract.contract.address);
+
         if (!contractData) {
+            setShowAlert(true);
+            setSuccess(false);
             return;
         }
 
         for (const contractInfo of contractData.contract.data.contract_info) {
             await RemixClient.importContract(upath.toUnix(contractInfo.path), contractInfo.source);
         }
+
+        setShowAlert(true);
+
+
+        setSuccess(true);
     }
 
     return (
@@ -56,6 +68,13 @@ export const AddFromProject: React.FC<Props> = ({contracts}) => {
                         Import
                     </Button>
                 </Form.Group>
+
+                {showAlert && success && <Alert variant="success">
+                    Contract successfully imported!
+                </Alert>}
+                {showAlert && !success && <Alert variant="danger">
+                  Failed importing contract
+                </Alert>}
             </Form>
         </div>
     );
