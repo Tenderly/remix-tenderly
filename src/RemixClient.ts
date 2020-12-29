@@ -61,7 +61,7 @@ class RemixClient extends PluginClient {
         return networks;
     }
 
-    public async fetchLastCompilation(): Promise<Verification | undefined> {
+    public async fetchLastCompilation(contractName: string): Promise<Verification | undefined> {
         const result = await this.client.call('solidity', 'getCompilationResult');
 
         if (!result.data || !result.source) {
@@ -69,17 +69,17 @@ class RemixClient extends PluginClient {
         }
 
         let metadata: any;
-        let contractName: string = "";
         const target = result.source.target;
 
         const contractFileName = result.source.target.replace("browser/", "/");
         const sol = result.source.sources[target.toString()].content;
 
         Object.keys(result.data.contracts).forEach(key => {
-            Object.keys(result.data.contracts[key]).forEach(nestedKey => {
-                contractName = nestedKey;
-                metadata = JSON.parse(result.data.contracts[key][nestedKey].metadata);
-            })
+            if (!result.data.contracts[key][contractName].metadata) {
+                return;
+            }
+
+            metadata = JSON.parse(result.data.contracts[key][contractName].metadata);
         });
 
         if (!metadata || !contractName) {

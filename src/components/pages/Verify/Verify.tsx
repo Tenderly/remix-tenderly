@@ -4,12 +4,17 @@ import RemixClient from "../../../RemixClient";
 import {Button, Form} from "react-bootstrap";
 import "./Verify.scss";
 
-export const Verify: React.FC = () => {
+type Props = {
+    compiledContracts: string[];
+}
+
+export const Verify: React.FC<Props> = ({compiledContracts}) => {
     const [networks, setNetworks] = useState([] as Network[]);
     const [address, setAddress] = useState("");
     const [networksMap, setNetworksMap] = useState({} as { [key: string]: Network })
     const [selectedNetwork, setSelectedNetwork] = useState("");
     const [verificationSuccessful, setVerificationSuccessful] = useState(false);
+    const [selectedContract, setSelectedContract] = useState("");
 
     useEffect(() => {
         const load = async () => {
@@ -30,7 +35,11 @@ export const Verify: React.FC = () => {
     const onSubmit = async (event: any) => {
         event.preventDefault();
 
-        const compilationResult = await RemixClient.fetchLastCompilation();
+        if (!selectedContract) {
+            return;
+        }
+
+        const compilationResult = await RemixClient.fetchLastCompilation(selectedContract);
         if (!compilationResult || compilationResult.contracts.length === 0) {
             return;
         }
@@ -90,6 +99,23 @@ export const Verify: React.FC = () => {
                 </Form.Group>
 
                 <Form.Group>
+                    <Form.Label>Contract</Form.Label>
+                    <Form.Control as="select" onChange={event => setSelectedContract(event.target.value)}
+                                  value={selectedContract}>
+                        <option key="" value="">None</option>
+                        {compiledContracts.map((contract) => {
+                            return <option key={contract}
+                                           value={contract}>
+                                {contract}
+                            </option>
+                        })}
+                    </Form.Control>
+                    <Form.Text className="text-muted">
+                        Please select the contract you want to verify
+                    </Form.Text>
+                </Form.Group>
+
+                <Form.Group>
                     <Form.Label>Address</Form.Label>
                     <Form.Control type="text" placeholder="Contract Address (required)"
                                   value={address}
@@ -97,7 +123,7 @@ export const Verify: React.FC = () => {
                 </Form.Group>
 
                 <Form.Group>
-                    <Button variant="primary" type="submit">
+                    <Button variant="primary" type="submit" disabled={!selectedContract}>
                         Verify
                     </Button>
                     <Button variant="secondary" className="add-to-project-btn" type="button" onClick={onAddToProject}

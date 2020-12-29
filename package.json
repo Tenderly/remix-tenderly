@@ -28,7 +28,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy": "firebase deploy --only hosting:remix-tenderly"
+    "deploy": "react-scripts build && firebase deploy --only hosting:remix-tenderly"
   },
   "eslintConfig": {
     "extends": [

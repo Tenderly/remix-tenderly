@@ -16,12 +16,43 @@ const App: React.FC = () => {
     const [contracts, setContracts] = useState({} as { [key: string]: Account });
     const [selectedProject, setSelectedProject] = useState("");
     const [accessTokenSet, setAccessTokenSet] = useState(false);
+    const [compiledContracts, setCompiledContracts] = useState([] as string[]);
 
     const [projectMap, setProjectMap] = useState({} as { [key: string]: Project });
+
+    const handleSetAccessToken = async (accessToken: string) => {
+        Cookie.set("remix_tenderly_access_token", accessToken, {sameSite: "None", secure: true});
+        RemixClient.setAccessToken(accessToken);
+        setAccessToken(accessToken);
+        setAccessTokenSet(true);
+        await getProjects();
+
+        const selectedProjectId = localStorage.getItem("remix_tenderly_selected_project") || "";
+        onProjectChange(selectedProjectId);
+    }
 
     useEffect(() => {
         const load = async () => {
             await RemixClient.onload();
+
+            RemixClient.client.on('solidity', 'compilationFinished', (fileName: string, source: any, languageVersion: string, data: any) => {
+                const compiledContractsMap: { [key: string]: boolean } = {};
+                const compiledContractsList: string[] = [];
+
+                Object.keys(data.contracts).forEach(key => {
+                    Object.keys(data.contracts[key]).forEach(nestedKey => {
+                        compiledContractsMap[nestedKey] = true;
+                    });
+                });
+
+                Object.entries(compiledContractsMap).forEach(([contractName, exists])=> {
+                   compiledContractsList.push(contractName);
+                });
+
+                compiledContractsList.sort();
+
+                setCompiledContracts(compiledContractsList);
+            });
 
             let existingAccessToken = Cookie.get("remix_tenderly_access_token");
             if (!existingAccessToken) {
@@ -35,17 +66,6 @@ const App: React.FC = () => {
 
         load();
     }, []);
-
-    const handleSetAccessToken = async (accessToken: string) => {
-        Cookie.set("remix_tenderly_access_token", accessToken, {sameSite: "None", secure: true});
-        RemixClient.setAccessToken(accessToken);
-        setAccessToken(accessToken);
-        setAccessTokenSet(true);
-        await getProjects();
-
-        const selectedProjectId = localStorage.getItem("remix_tenderly_selected_project") || "";
-        onProjectChange(selectedProjectId);
-    }
 
     const getProjects = async () => {
         const projects = await RemixClient.getProjects();
@@ -104,7 +124,7 @@ const App: React.FC = () => {
                         </AccordionElement>
                         <AccordionElement headerText="Verify" eventKey="1"
                                           disabled={!accessTokenSet || !selectedProject}>
-                            <Verify/>
+                            <Verify compiledContracts={compiledContracts}/>
                         </AccordionElement>
                         <AccordionElement headerText="Add From Project" eventKey="2"
                                           disabled={!accessTokenSet || !selectedProject}>
