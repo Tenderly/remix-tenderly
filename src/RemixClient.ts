@@ -161,6 +161,17 @@ class RemixClient extends PluginClient {
         }
     }
 
+    public async checkToken(): Promise<boolean> {
+        try {
+            await this.axiosClient.get(`/principal`);
+        } catch (e) {
+            console.log("Couldn't fetch user info: ", e);
+            return false;
+        }
+
+        return true
+    }
+
     public async importContract(name: string, source: string): Promise<void> {
         this.client.call('fileManager', 'setFile', upath.join('tenderly', this.projectSlug, name), source);
     }

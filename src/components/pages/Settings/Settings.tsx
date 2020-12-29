@@ -1,7 +1,8 @@
-import React from "react";
-import {Button, Form} from 'react-bootstrap';
+import React, {useState} from "react";
+import {Alert, Button, Form} from 'react-bootstrap';
 import "./Settings.scss";
 import {Project} from '../../../types/Api';
+import RemixClient from '../../../RemixClient';
 
 type Props = {
     handleSetAccessToken: any;
@@ -17,12 +18,22 @@ type Props = {
 };
 
 export const Settings: React.FC<Props> = ({handleSetAccessToken, accessTokenSet, selectedProject, projects, accessToken, getProjects, onAccessTokenChange, onProjectChange}) => {
+    const [showAlert, setShowAlert] = useState(false);
+    const [validToken, setValidToken] = useState(false);
+
     const onSubmit = async (event: any) => {
         event.preventDefault();
 
-        await handleSetAccessToken(accessToken);
-    }
+        setShowAlert(false);
+        setValidToken(false);
 
+        await handleSetAccessToken(accessToken);
+
+        const success = await RemixClient.checkToken();
+
+        setShowAlert(true);
+        setValidToken(success);
+    }
 
     return (
         <div className="settings-page">
@@ -49,6 +60,13 @@ export const Settings: React.FC<Props> = ({handleSetAccessToken, accessTokenSet,
                         Refresh projects
                     </Button>
                 </Form.Group>
+
+                {showAlert && validToken && <Alert variant="success">
+                  Successfully authenticated with Tenderly!
+                </Alert>}
+                {showAlert && !validToken && <Alert variant="danger">
+                  Incorrect access token.
+                </Alert>}
 
                 <Form.Group>
                     <Form.Label>Project</Form.Label>
