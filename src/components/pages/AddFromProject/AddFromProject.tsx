@@ -1,15 +1,16 @@
-import React, {useState} from "react";
-import {Account} from "../../../types/Api";
-import {Alert, Button, Form} from "react-bootstrap";
+import React, { useState } from "react";
+import { Account } from "../../../types/Api";
+import { Alert, Button, Form } from "react-bootstrap";
 import "./AddFromProject.scss";
 import RemixClient from '../../../RemixClient';
 import upath from 'upath';
 
 type Props = {
     contracts: { [id: string]: Account };
+    refreshContracts: any;
 }
 
-export const AddFromProject: React.FC<Props> = ({contracts}) => {
+export const AddFromProject: React.FC<Props> = ({ contracts, refreshContracts }) => {
     const [selectedContract, setSelectedContract] = useState("");
     const [showAlert, setShowAlert] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -42,17 +43,23 @@ export const AddFromProject: React.FC<Props> = ({contracts}) => {
         setSuccess(true);
     }
 
+    const onRefreshContracts = async (event: any) => {
+        event.preventDefault();
+
+        await refreshContracts();
+    }
+
     return (
         <div className="add-from-project-page">
             <Form onSubmit={onSubmit}>
                 <Form.Group>
                     <Form.Label>Contract</Form.Label>
                     <Form.Control as="select" onChange={event => setSelectedContract(event.target.value)}
-                                  value={selectedContract}>
+                        value={selectedContract}>
                         <option key="" value="">None</option>
                         {Object.entries(contracts).map(([id, contract]) => {
                             return <option key={id}
-                                           value={id}>
+                                value={id}>
                                 {!!contract.display_name ? contract.display_name : contract.contract.contract_name}
                             </option>
                         })}
@@ -66,13 +73,16 @@ export const AddFromProject: React.FC<Props> = ({contracts}) => {
                     <Button variant="primary" type="submit" disabled={!selectedContract}>
                         Import
                     </Button>
+                    <Button variant="secondary" className="refresh-contracts-btn" type="button" onClick={onRefreshContracts}>
+                        Refresh Contracts
+                    </Button>
                 </Form.Group>
 
                 {showAlert && success && <Alert variant="success">
                     Contract successfully imported!
                 </Alert>}
                 {showAlert && !success && <Alert variant="danger">
-                  Failed importing contract
+                    Failed importing contract
                 </Alert>}
             </Form>
         </div>
