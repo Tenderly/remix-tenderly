@@ -9,6 +9,8 @@ import { Verify } from "./components/pages/Verify/Verify";
 import { Account, Project } from "./types/Api";
 import Cookie from "js-cookie";
 import { AddFromProject } from "./components/pages/AddFromProject/AddFromProject";
+import { Alert } from "react-bootstrap";
+import { isLocalStorageAvailable } from "./util";
 
 const App: React.FC = () => {
     const [accessToken, setAccessToken] = useState("");
@@ -19,6 +21,7 @@ const App: React.FC = () => {
     const [compiledContracts, setCompiledContracts] = useState([] as string[]);
     const [projectSlug, setProjectSlug] = useState("");
     const [username, setUsername] = useState("");
+    const [localStorageAvailable, setLocalStorageAvailable] = useState(true);
 
     const [projectMap, setProjectMap] = useState({} as { [key: string]: Project });
 
@@ -40,6 +43,14 @@ const App: React.FC = () => {
 
     useEffect(() => {
         const load = async () => {
+            const testLS = isLocalStorageAvailable();
+
+            setLocalStorageAvailable(testLS);
+
+            if (!testLS) {
+                return;
+            }
+
             await RemixClient.onload();
 
             RemixClient.client.on('solidity', 'compilationFinished', (fileName: string, source: any, languageVersion: string, data: any) => {
@@ -125,7 +136,7 @@ const App: React.FC = () => {
         <div id="wrapper">
             <Container>
                 <main role="main">
-                    <Accordion>
+                    {localStorageAvailable && <Accordion>
                         <AccordionElement headerText="Settings" eventKey="0">
                             <Settings handleSetAccessToken={handleSetAccessToken}
                                 accessToken={accessToken}
@@ -145,7 +156,11 @@ const App: React.FC = () => {
                             disabled={!accessTokenSet || !selectedProject}>
                             <AddFromProject contracts={contracts} refreshContracts={refreshContracts} />
                         </AccordionElement>
-                    </Accordion>
+                    </Accordion>}
+                    {!localStorageAvailable && <Alert variant="danger">
+                        Failed verifying contract. Please check if the network, address and compiler
+                        information is correct. After that, please re-compile your contract and try again.
+                    </Alert>}
                 </main>
             </Container>
         </div>
