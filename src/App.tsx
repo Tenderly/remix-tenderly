@@ -141,7 +141,7 @@ const App: React.FC = () => {
                             <Verify compiledContracts={compiledContracts} projectSlug={projectSlug}
                                 username={username} />
                         </AccordionElement>
-                        <AccordionElement headerText="Add From Project" eventKey="2"
+                        <AccordionElement headerText="Import contracts into Remix from Tenderly" eventKey="2"
                             disabled={!accessTokenSet || !selectedProject}>
                             <AddFromProject contracts={contracts} refreshContracts={refreshContracts} />
                         </AccordionElement>
