@@ -1,8 +1,8 @@
-import {createClient} from "@remixproject/plugin-iframe";
-import {PluginClient} from "@remixproject/plugin";
-import axios, {AxiosInstance} from "axios";
-import {Account, Network, Project} from "./types/Api";
-import {Verification} from "./types/Verify";
+import { createClient } from "@remixproject/plugin-iframe";
+import { PluginClient } from "@remixproject/plugin";
+import axios, { AxiosInstance } from "axios";
+import { Account, Network, Project } from "./types/Api";
+import { Verification } from "./types/Verify";
 import upath from 'upath';
 
 const networksToIgnore: { [id: string]: boolean } = {
@@ -143,7 +143,7 @@ class RemixClient extends PluginClient {
     public async getContracts(): Promise<Account[]> {
         try {
             const response = await this.axiosClient.get(`/account/${this.username}/project/${this.projectSlug}/contracts`);
-            return response.data;
+            return response.data || [];
         } catch (e) {
             console.log("Couldn't fetch contracts from project: ", e);
             return [];

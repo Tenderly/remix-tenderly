@@ -1,7 +1,7 @@
-import React, {useState} from "react";
-import {Alert, Button, Form} from 'react-bootstrap';
+import React, { useState } from "react";
+import { Alert, Button, Form } from 'react-bootstrap';
 import "./Settings.scss";
-import {Project} from '../../../types/Api';
+import { Project } from '../../../types/Api';
 import RemixClient from '../../../RemixClient';
 
 type Props = {
@@ -17,7 +17,7 @@ type Props = {
     projects: Project[];
 };
 
-export const Settings: React.FC<Props> = ({handleSetAccessToken, accessTokenSet, selectedProject, projects, accessToken, getProjects, onAccessTokenChange, onProjectChange}) => {
+export const Settings: React.FC<Props> = ({ handleSetAccessToken, accessTokenSet, selectedProject, projects, accessToken, getProjects, onAccessTokenChange, onProjectChange }) => {
     const [showAlert, setShowAlert] = useState(false);
     const [validToken, setValidToken] = useState(false);
 
@@ -41,12 +41,12 @@ export const Settings: React.FC<Props> = ({handleSetAccessToken, accessTokenSet,
                 <Form.Group>
                     <Form.Label>Access Token</Form.Label>
                     <Form.Control type="text" placeholder="Enter Access Token"
-                                  value={accessToken}
-                                  onChange={onAccessTokenChange}/>
+                        value={accessToken}
+                        onChange={onAccessTokenChange} />
                     <Form.Text className="text-muted">
                         You can generate an access token by going to <a
-                        href="https://dashboard.tenderly.co/account/authorization" target="_blank"
-                        rel="noreferrer">settings</a> in your
+                            href="https://dashboard.tenderly.co/account/authorization" target="_blank"
+                            rel="noreferrer">settings</a> in your
                         Tenderly dashboard.
                     </Form.Text>
                 </Form.Group>
@@ -56,34 +56,34 @@ export const Settings: React.FC<Props> = ({handleSetAccessToken, accessTokenSet,
                         Save
                     </Button>
                     <Button variant="secondary" className="refresh-projects-btn" type="button" onClick={getProjects}
-                            disabled={!accessTokenSet}>
+                        disabled={!accessTokenSet}>
                         Refresh projects
                     </Button>
                 </Form.Group>
 
                 {showAlert && validToken && <Alert variant="success">
-                  Successfully authenticated with Tenderly!
+                    Successfully authenticated with Tenderly!
                 </Alert>}
                 {showAlert && !validToken && <Alert variant="danger">
-                  Incorrect access token.
+                    Incorrect access token.
                 </Alert>}
 
                 <Form.Group>
                     <Form.Label>Project</Form.Label>
                     <Form.Control as="select" onChange={event => onProjectChange(event.target.value)}
-                                  value={selectedProject}>
-                        <option key="" value="">None</option>
+                        value={selectedProject}>
+                        {!projects.length && <option key="" value="">None</option>}
                         {projects.map((project) => {
                             return <option key={project.id}
-                                           value={project.id}>
+                                value={project.id}>
                                 {project.name} ({project.owner.username}/{project.slug})
                             </option>
                         })}
                     </Form.Control>
                     <Form.Text className="text-muted">
                         You can create a new project by clicking <a
-                        href="https://dashboard.tenderly.co/projects/create" target="_blank"
-                        rel="noreferrer">here</a>.
+                            href="https://dashboard.tenderly.co/projects/create" target="_blank"
+                            rel="noreferrer">here</a>.
                     </Form.Text>
                 </Form.Group>
             </Form>

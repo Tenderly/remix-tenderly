@@ -29,7 +29,12 @@ const App: React.FC = () => {
         setAccessTokenSet(true);
         await getProjects();
 
-        const selectedProjectId = localStorage.getItem("remix_tenderly_selected_project") || "";
+        let selectedProjectId = localStorage.getItem("remix_tenderly_selected_project") || "";
+
+        if (selectedProjectId === "" && projects.length > 0) {
+            selectedProjectId = projects[0].id;
+        }
+
         onProjectChange(selectedProjectId);
     }
 
