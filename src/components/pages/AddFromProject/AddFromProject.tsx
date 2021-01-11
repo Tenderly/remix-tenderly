@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Account } from "../../../types/Api";
 import { Alert, Button, Form } from "react-bootstrap";
 import "./AddFromProject.scss";
@@ -14,6 +14,12 @@ export const AddFromProject: React.FC<Props> = ({ contracts, refreshContracts })
     const [selectedContract, setSelectedContract] = useState("");
     const [showAlert, setShowAlert] = useState(false);
     const [success, setSuccess] = useState(false);
+
+    useEffect(() => {
+        if (!selectedContract && Object.entries(contracts).length > 0) {
+            setSelectedContract(Object.values(contracts)[0].id);
+        }
+    }, [contracts]);
 
     const onSubmit = async (event: any) => {
         event.preventDefault();
@@ -47,6 +53,10 @@ export const AddFromProject: React.FC<Props> = ({ contracts, refreshContracts })
         event.preventDefault();
 
         await refreshContracts();
+
+        if (!selectedContract && Object.entries(contracts).length > 0) {
+            setSelectedContract(Object.values(contracts)[0].id);
+        }
     }
 
     return (
