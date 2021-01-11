@@ -56,7 +56,7 @@ export const AddFromProject: React.FC<Props> = ({ contracts, refreshContracts })
                     <Form.Label>Contract</Form.Label>
                     <Form.Control as="select" onChange={event => setSelectedContract(event.target.value)}
                         value={selectedContract}>
-                        <option key="" value="">None</option>
+                        {!Object.entries(contracts).length && <option key="" value="">None</option>}
                         {Object.entries(contracts).map(([id, contract]) => {
                             return <option key={id}
                                 value={id}>

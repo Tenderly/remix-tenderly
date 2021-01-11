@@ -31,7 +31,21 @@ class RemixClient extends PluginClient {
         try {
             const response = await this.axiosClient.get("/account/me/projects");
 
-            return response.data.projects;
+            const projects = response.data.projects
+
+            projects.sort((a: Project, b: Project) => {
+                if (a.name < b.name) {
+                    return -1;
+                }
+
+                if (a.name > b.name) {
+                    return 1;
+                }
+
+                return 0;
+            });
+
+            return projects;
         } catch (e) {
             console.log("Couldn't fetch projects: ", e);
         }
@@ -143,7 +157,25 @@ class RemixClient extends PluginClient {
     public async getContracts(): Promise<Account[]> {
         try {
             const response = await this.axiosClient.get(`/account/${this.username}/project/${this.projectSlug}/contracts`);
-            return response.data || [];
+
+            const contracts = response.data || [];
+
+            contracts.sort((a: Account, b: Account) => {
+                let aName = !!a.display_name ? a.display_name : a.contract.contract_name;
+                let bName = !!b.display_name ? b.display_name : b.contract.contract_name;
+
+                if (aName < bName) {
+                    return -1;
+                }
+
+                if (aName > bName) {
+                    return 1;
+                }
+
+                return 0;
+            });
+
+            return contracts;
         } catch (e) {
             console.log("Couldn't fetch contracts from project: ", e);
             return [];
