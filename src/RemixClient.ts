@@ -1,7 +1,7 @@
 import { createClient } from "@remixproject/plugin-iframe";
 import { PluginClient } from "@remixproject/plugin";
-import axios, { AxiosInstance } from "axios";
-import { Account, Network, Project } from "./types/Api";
+import axios, { AxiosInstance, AxiosResponse } from "axios";
+import { Account, Network, Project, BillingInfo } from "./types/Api";
 import { Verification } from "./types/Verify";
 import upath from 'upath';
 
@@ -121,9 +121,14 @@ class RemixClient extends PluginClient {
         };
     }
 
-    public async verify(verification: Verification): Promise<boolean> {
+    public async verify(verification: Verification, verifyPrivately?: boolean): Promise<boolean> {
         try {
-            const response = await this.axiosClient.post("/account/me/verify-contracts", verification);
+            let response: AxiosResponse<any>;
+            if (!verifyPrivately) {
+                response = await this.axiosClient.post("/account/me/verify-contracts", verification);
+            } else {
+                response = await this.axiosClient.post(`/account/me/project/${this.projectSlug}/contracts`, verification);
+            }
 
             if (!!response.data.bytecode_mismatch_errors) {
                 console.log("Got bytecode mismatch: ", response.data.bytecode_mismatch_errors);
@@ -202,6 +207,17 @@ class RemixClient extends PluginClient {
         }
 
         return true
+    }
+
+    public async getBillingInfo(): Promise<BillingInfo | undefined> {
+        try {
+            const response = await this.axiosClient.get(`/account/${this.username}/project/${this.projectSlug}/billing`);
+
+            return response.data;
+        } catch (e) {
+            console.log("Couldn't fetch billing info: ", e);
+            return;
+        }
     }
 
     public async importContract(name: string, source: string): Promise<void> {

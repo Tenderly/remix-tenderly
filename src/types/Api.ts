@@ -47,3 +47,15 @@ export interface ContractInfo {
     path: string;
     source: string;
 }
+
+export interface BillingInfo {
+    project: ProjectBillingInfo;
+}
+
+export interface ProjectBillingInfo {
+    includes: IncludesBillingInfo;
+}
+
+export interface IncludesBillingInfo {
+    private_contracts: boolean;
+}

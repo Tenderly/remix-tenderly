@@ -8,6 +8,7 @@ type Props = {
     compiledContracts: string[];
     projectSlug: string;
     username: string;
+    hasPrivateContracts: boolean;
 }
 
 const networkSlugMap: { [networkID: string]: string } = {
@@ -34,7 +35,7 @@ function getNetworkSlug(networkID: string): string {
     return slug;
 }
 
-export const Verify: React.FC<Props> = ({ compiledContracts, projectSlug, username }) => {
+export const Verify: React.FC<Props> = ({ compiledContracts, projectSlug, username, hasPrivateContracts }) => {
     const [networks, setNetworks] = useState([] as Network[]);
     const [address, setAddress] = useState("");
     const [networksMap, setNetworksMap] = useState({} as { [key: string]: Network })
@@ -132,6 +133,34 @@ export const Verify: React.FC<Props> = ({ compiledContracts, projectSlug, userna
         setImportSuccessful(success);
     }
 
+    const onPrivateVerify = async (event: any) => {
+        event.preventDefault();
+
+        setShowAlert(false);
+        setShowImportAlert(false);
+
+        if (!selectedContract) {
+            return;
+        }
+
+        const compilationResult = await RemixClient.fetchLastCompilation(selectedContract);
+        if (!compilationResult || compilationResult.contracts.length === 0) {
+            setShowAlert(true);
+            setVerificationSuccessful(false);
+            return;
+        }
+
+        compilationResult.contracts[0].networks[selectedNetwork] = {
+            address: address,
+            links: {},
+        }
+
+        const success = await RemixClient.verify(compilationResult, true);
+
+        setShowImportAlert(true);
+        setImportSuccessful(success);
+    }
+
     const openTab = (url: string) => {
         return (event: any) => {
             event.preventDefault();
@@ -196,8 +225,26 @@ export const Verify: React.FC<Props> = ({ compiledContracts, projectSlug, userna
                         Verify and Add to Project
                     </Button>
                     <Form.Text className="text-muted">
-                        If you use this option, after the contract is verified, it will automatically be added to the project you selected in the settings
+                        After the contract is verified, it will automatically be added to the project you selected in the settings
                     </Form.Text>
+                </Form.Group>
+
+                <Form.Group>
+                    <Button variant="secondary" className="add-to-project-btn" type="button" onClick={onPrivateVerify}
+                        disabled={!selectedContract || !address || !selectedNetwork || !hasPrivateContracts}>
+                        Privately Verify
+                    </Button>
+                    {hasPrivateContracts && <Form.Text className="text-muted">
+                        The contract will privately be verified and added to the project you selected in the settings.
+                        This means that only you can see the source code
+                    </Form.Text>}
+                    {!hasPrivateContracts && <Form.Text className="text-muted">
+                        The contract will privately be verified.
+                        This means that only you can see the source code. A Tenderly Pro or Developer subscription is required.
+                        You can upgrade by clicking <a
+                            href="https://dashboard.tenderly.co/account/billing" target="_blank"
+                            rel="noreferrer">here</a>
+                    </Form.Text>}
                 </Form.Group>
             </Form>
 
