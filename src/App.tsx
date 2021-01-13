@@ -38,7 +38,7 @@ const App: React.FC = () => {
         Cookie.set("remix_tenderly_access_token", accessToken, { sameSite: "None", secure: true });
         RemixClient.setAccessToken(accessToken);
 
-        await getProjects();
+        const { projects, projectMap } = await getProjects();
 
         const success = await RemixClient.checkToken();
 
@@ -58,7 +58,7 @@ const App: React.FC = () => {
             selectedProjectId = projects[0].id;
         }
 
-        onProjectChange(selectedProjectId);
+        onProjectChange(selectedProjectId, projectMap);
     }
 
     useEffect(() => {
@@ -105,7 +105,7 @@ const App: React.FC = () => {
         load();
     }, []);
 
-    const getProjects = async () => {
+    const getProjects = async (): Promise<{ projects: Project[], projectMap: { [key: string]: Project } }> => {
         const projects = await RemixClient.getProjects();
 
         const newProjectMap: { [key: string]: Project } = {};
@@ -114,15 +114,16 @@ const App: React.FC = () => {
 
         setProjects(projects);
         setProjectMap(newProjectMap);
+
+        return { projects, projectMap: newProjectMap };
     }
 
     const onAccessTokenChange = (event: any) => {
         setAccessToken(event.target.value);
     }
 
-    const onProjectChange = async (projectId: string) => {
+    const onProjectChange = async (projectId: string, projectMap: { [id: string]: Project }) => {
         const project = projectMap[projectId];
-        console.log("Tenerly projects loaded: ", projectMap);
 
         localStorage.setItem("remix_tenderly_selected_project", projectId);
 
@@ -180,7 +181,8 @@ const App: React.FC = () => {
                                 getProjects={getProjects}
                                 projects={projects}
                                 selectedProject={selectedProject}
-                                onProjectChange={onProjectChange} />
+                                onProjectChange={onProjectChange}
+                                projectMap={projectMap} />
                         </AccordionElement>
                         <AccordionElement headerText="Verify" eventKey="1"
                             disabled={!accessTokenSet || !selectedProject}>

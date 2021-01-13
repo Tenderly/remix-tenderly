@@ -15,12 +15,13 @@ type Props = {
     onProjectChange: any;
     selectedProject: any;
     projects: Project[];
+    projectMap: { [id: string]: Project }
 
     showAlert: boolean;
     validToken: boolean;
 };
 
-export const Settings: React.FC<Props> = ({ handleSetAccessToken, accessTokenSet, selectedProject, projects, accessToken, getProjects, onAccessTokenChange, onProjectChange, showAlert, validToken }) => {
+export const Settings: React.FC<Props> = ({ handleSetAccessToken, accessTokenSet, selectedProject, projects, projectMap, accessToken, getProjects, onAccessTokenChange, onProjectChange, showAlert, validToken }) => {
     const onSubmit = async (event: any) => {
         event.preventDefault();
 
@@ -62,7 +63,7 @@ export const Settings: React.FC<Props> = ({ handleSetAccessToken, accessTokenSet
 
                 <Form.Group>
                     <Form.Label>Project</Form.Label>
-                    <Form.Control as="select" onChange={event => onProjectChange(event.target.value)}
+                    <Form.Control as="select" onChange={event => onProjectChange(event.target.value, projectMap)}
                         value={selectedProject}>
                         {!projects.length && <option key="" value="">None</option>}
                         {projects.map((project) => {
