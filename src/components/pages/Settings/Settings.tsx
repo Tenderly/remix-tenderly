@@ -15,24 +15,16 @@ type Props = {
     onProjectChange: any;
     selectedProject: any;
     projects: Project[];
+
+    showAlert: boolean;
+    validToken: boolean;
 };
 
-export const Settings: React.FC<Props> = ({ handleSetAccessToken, accessTokenSet, selectedProject, projects, accessToken, getProjects, onAccessTokenChange, onProjectChange }) => {
-    const [showAlert, setShowAlert] = useState(false);
-    const [validToken, setValidToken] = useState(false);
-
+export const Settings: React.FC<Props> = ({ handleSetAccessToken, accessTokenSet, selectedProject, projects, accessToken, getProjects, onAccessTokenChange, onProjectChange, showAlert, validToken }) => {
     const onSubmit = async (event: any) => {
         event.preventDefault();
 
-        setShowAlert(false);
-        setValidToken(false);
-
         await handleSetAccessToken(accessToken);
-
-        const success = await RemixClient.checkToken();
-
-        setShowAlert(true);
-        setValidToken(success);
     }
 
     return (

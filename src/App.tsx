@@ -14,10 +14,13 @@ import { isLocalStorageAvailable } from "./util";
 
 const App: React.FC = () => {
     const [accessToken, setAccessToken] = useState("");
+    const [accessTokenSet, setAccessTokenSet] = useState(false);
+    const [showAccessTokenAlert, setShowAccessTokenAlert] = useState(false);
+    const [validToken, setValidToken] = useState(false);
+
     const [projects, setProjects] = useState([] as Project[]);
     const [contracts, setContracts] = useState({} as { [key: string]: Account });
     const [selectedProject, setSelectedProject] = useState("");
-    const [accessTokenSet, setAccessTokenSet] = useState(false);
     const [compiledContracts, setCompiledContracts] = useState([] as string[]);
     const [projectSlug, setProjectSlug] = useState("");
     const [username, setUsername] = useState("");
@@ -26,17 +29,32 @@ const App: React.FC = () => {
 
     const [projectMap, setProjectMap] = useState({} as { [key: string]: Project });
 
-    const handleSetAccessToken = async (accessToken: string) => {
+    const handleSetAccessToken = async (accessToken: string, initialSetup?: boolean) => {
+        setShowAccessTokenAlert(false);
+        setAccessTokenSet(false);
+        setValidToken(false);
+        setHasPrivateContracts(false);
+
         Cookie.set("remix_tenderly_access_token", accessToken, { sameSite: "None", secure: true });
         RemixClient.setAccessToken(accessToken);
+
+        await getProjects();
+
+        const success = await RemixClient.checkToken();
+
+        setShowAccessTokenAlert(!initialSetup);
+        setValidToken(success);
+
+        if (!success) {
+            return;
+        }
+
         setAccessToken(accessToken);
         setAccessTokenSet(true);
-        setHasPrivateContracts(false);
-        await getProjects();
 
         let selectedProjectId = localStorage.getItem("remix_tenderly_selected_project") || "";
 
-        if (selectedProjectId === "" && projects.length > 0) {
+        if (!selectedProjectId && projects.length > 0) {
             selectedProjectId = projects[0].id;
         }
 
@@ -80,7 +98,7 @@ const App: React.FC = () => {
             }
 
             if (existingAccessToken) {
-                await handleSetAccessToken(existingAccessToken);
+                await handleSetAccessToken(existingAccessToken, true);
             }
         }
 
@@ -104,6 +122,7 @@ const App: React.FC = () => {
 
     const onProjectChange = async (projectId: string) => {
         const project = projectMap[projectId];
+        console.log("Tenerly projects loaded: ", projectMap);
 
         localStorage.setItem("remix_tenderly_selected_project", projectId);
 
@@ -155,6 +174,8 @@ const App: React.FC = () => {
                             <Settings handleSetAccessToken={handleSetAccessToken}
                                 accessToken={accessToken}
                                 accessTokenSet={accessTokenSet}
+                                showAlert={showAccessTokenAlert}
+                                validToken={validToken}
                                 onAccessTokenChange={onAccessTokenChange}
                                 getProjects={getProjects}
                                 projects={projects}
