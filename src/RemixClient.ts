@@ -1,4 +1,4 @@
-import { createClient } from "@remixproject/plugin-iframe";
+import { createClient } from "@remixproject/plugin-webview";
 import { PluginClient } from "@remixproject/plugin";
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import { Account, Network, Project, BillingInfo } from "./types/Api";
